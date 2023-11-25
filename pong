@@ -1,0 +1,1089 @@
+LIBRARY IEEE;
+USE ieee.std_logic_1164.all;
+USE ieee.numeric_std.all;
+
+ENTITY pong IS
+	PORT     (  clk : IN 	STD_LOGIC;
+					rst :	IN		STD_LOGIC;
+					
+					start : 	IN		STD_LOGIC;
+					
+					score1d 	:	OUT 	STD_LOGIC_VECTOR(6 DOWNTO 0);
+					score2d 	:	OUT 	STD_LOGIC_VECTOR(6 DOWNTO 0);
+					
+					controwp1ju : IN STD_LOGIC ;
+					controwp1jd : IN STD_LOGIC ;
+					
+					controwp2ju : IN STD_LOGIC ;
+					controwp2jd : IN STD_LOGIC ;
+					
+					row 	:	OUT 	STD_LOGIC_VECTOR(7 DOWNTO 0);
+					row2 	:	OUT 	STD_LOGIC_VECTOR(7 DOWNTO 0);
+					col 	:	OUT 	STD_LOGIC_VECTOR(15 DOWNTO 0));
+END ENTITY;
+--------------------------------------------------------------------------------------------------------------------
+ARCHITECTURE fsm OF pong IS
+	TYPE state IS (none, startR, ur, ul, dr, dl, l, r, playersur, playersul, playersdr, playersdl, playersr, playersl, golp1, golp11, golp2, golp22, winner1, winner2, rowg1, rowg2, rowg3, rowg4, rowg5, rowg6, rowg7, rowg8, rowh1, rowh2, rowh3, rowh4, rowh5, rowh6, rowh7, rowh8, rowg11, rowg21, rowg31, rowg41, rowg51, rowg61, rowg71, rowg81, rowg12, rowg22, rowg32, rowg42, rowg52, rowg62, rowg72, rowg82);
+	SIGNAL pr_state, nx_state: state;
+	
+	signal max_tick  : STD_LOGIC;
+	signal max_tick8 : STD_LOGIC;
+	signal max_tick0 : STD_LOGIC;
+	signal max_tick1 : STD_LOGIC;
+	signal max_tick2 : STD_LOGIC;
+	signal max_tick3 : STD_LOGIC;
+	signal max_tick4 : STD_LOGIC;
+	signal max_tick5 : STD_LOGIC;
+	signal max_tickg : STD_LOGIC;
+	signal max_tickm : STD_LOGIC;
+	signal max_ticks : STD_LOGIC;
+	
+	signal max : UNSIGNED(23 DOWNTO 0);
+	
+	signal rise1u       : STD_LOGIC;
+	signal rise1d       : STD_LOGIC;
+	signal rise2u       : STD_LOGIC;
+	signal rise2d       : STD_LOGIC;
+	
+	signal score1 : UNSIGNED(3 DOWNTO 0) :="0000";
+	signal score2 : UNSIGNED(3 DOWNTO 0) :="0000";
+	
+	signal controwp1 : UNSIGNED(2 DOWNTO 0) :="000";
+	signal controwp2 : UNSIGNED(2 DOWNTO 0) :="000";
+	
+	signal contcol	  : UNSIGNED(3 DOWNTO 0) :="0000";
+	signal controw	  : UNSIGNED(2 DOWNTO 0) :="000";
+	
+	
+	signal countergoal: UNSIGNED(9 DOWNTO 0) :="0000000000";
+	
+	--signal wr_en		: STD_LOGIC:='0';
+	--signal w_addr_s	: STD_LOGIC_VECTOR(ADDR_WIDTH-1 DOWNTO 0):=(OTHERS => '0');
+	--signal r_addr_s	: STD_LOGIC_VECTOR(ADDR_WIDTH-1 DOWNTO 0):=(OTHERS => '0');
+	--signal r_data_s	: STD_LOGIC_VECTOR(ADDR_WIDTH-1 DOWNTO 0):=(OTHERS => '0');
+	--signal w_data_s	: STD_LOGIC_VECTOR(ADDR_WIDTH-1 DOWNTO 0):=(OTHERS => '0');
+------------------------------------------------------------------------------------------------------------------	
+BEGIN
+-------------------------------------------------------------------
+	
+
+		PROCESS(rst, clk)
+	BEGIN
+		IF (rst='1') THEN
+			
+			pr_state  <= none;
+			contcol   <= "1000";
+			controw   <= "100";
+			controwp1 <= "011";
+			controwp2 <= "011";
+			score1    <= "0000";
+			score2    <= "0000";
+			max		 <= "101111101011110000100000";
+		ELSIF (rising_edge(clk)) THEN
+			pr_state <= nx_state;
+			
+			
+			
+			IF (max_ticks='1')THEN
+				IF (nx_state = ur OR nx_state = playersur)THEN
+				contcol <= contcol +1;
+				controw <= controw -1;
+				
+				ELSIF (nx_state = ul OR nx_state = playersul)THEN
+				contcol <= contcol -1;
+				controw <= controw -1;
+				
+				ELSIF (nx_state = dr OR nx_state = playersdr) THEN
+				contcol <= contcol +1;
+				controw <= controw +1;
+				
+				ELSIF (nx_state = dl OR nx_state = playersdl) THEN
+				contcol <= contcol -1;
+				controw <= controw +1;
+				
+				ELSIF (nx_state = l OR nx_state = playersl) THEN
+				contcol <= contcol -1;
+				
+				ELSIF (nx_state = r OR nx_state = playersr) THEN
+				contcol <= contcol +1;
+				
+				
+				ELSE
+				END IF;
+			ELSE
+			
+			
+			IF(rise1u = '1')THEN
+			IF(controwp1 /=  "001")THEN
+			controwp1 <= controwp1 -1;
+			ELSE
+			END IF;
+			ELSIF(rise1d = '1')THEN
+			IF(controwp1 /=  "110")THEN
+			controwp1 <= controwp1 +1;
+			ELSE
+			END IF;
+			ELSE
+			END IF;
+			
+			IF(rise2u = '1')THEN
+			IF(controwp2 /=  "001")THEN
+			controwp2 <= controwp2 -1;
+			ELSE
+			END IF;
+			ELSIF(rise2d = '1')THEN
+			IF(controwp2 /=  "110")THEN
+			controwp2 <= controwp2 +1;
+			ELSE
+			END IF;
+			ELSE
+			END IF;
+			
+			
+			
+			
+			END IF;
+		IF (pr_state = golp11 OR pr_state = golp22) THEN
+		IF(  max_tickm = '1'  ) THEN
+			countergoal <= countergoal +1;
+		
+		ELSE
+		END IF;
+		ELSE	
+		END IF;
+		
+		IF(  max_tick8 = '1'  ) THEN
+		
+			IF(  max > "000110001001011010000000"  ) THEN
+			max <= max- 100000;
+			ELSE
+			max <= max ;
+			END IF;
+			IF (pr_state = golp1) THEN
+				score1 <= score1+1;
+				contcol <= "1000";
+				controw <= "100";
+				controwp1 <= "011";
+				controwp2 <= "011";
+				countergoal <= "0000000000";
+				max		 <= "101111101011110000100000";
+			ELSIF (pr_state = golp2) THEN
+				score2 <= score2+1;
+				contcol <= "1000";
+				controw <= "100";
+				controwp1 <= "011";
+				controwp2 <= "011";
+				countergoal <= "0000000000";
+				max		 <= "101111101011110000100000";
+			ELSIF (pr_state = winner1) THEN
+				score1 <= "1000";
+			ELSIF (pr_state = winner2) THEN
+				score2 <= "1000";
+				
+			ELSE
+			END IF;
+			
+		ELSE
+		END IF;
+		
+		
+		END IF;
+		
+		
+	END PROCESS;
+-------------------------------------------------------------------------	
+	
+	PROCESS(rst, clk, start)
+	BEGIN
+		CASE pr_state IS 
+		--press start to play
+			WHEN none	=> 
+			
+				row 	<= "11111111";
+				row2  <= "11111111";
+				
+				IF(start = '1')THEN
+				nx_state <= startR;
+				ELSE 
+				nx_state <= none;
+				END IF;
+			--------------------------------------------------	
+			WHEN startR	=> 
+			
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				IF(max_tick0 = '1')THEN
+				nx_state <= ur;
+				ELSIF(max_tick1 = '1')THEN
+				nx_state <= ul;
+				ELSIF(max_tick2 = '1')THEN
+				nx_state <= dr;
+				ELSIF(max_tick3 = '1')THEN
+				nx_state <= dl;
+				ELSIF(max_tick4 = '1')THEN
+				nx_state <= l;
+				ELSIF(max_tick5 = '1')THEN
+				nx_state <= r;
+				ELSE 
+				nx_state <= ur;
+				END IF;	
+			------------------------------------------	
+			WHEN ur	=>
+			
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				IF(controw = "000")THEN
+				nx_state <= dr;
+				
+				ELSIF(controw = (controwp2-1) AND contcol = "1110")THEN
+				nx_state <= ul;
+				
+				ELSIF(controw = (controwp2) AND contcol = "1110")THEN
+				nx_state <= l;
+				
+				ELSIF((controw = (controwp2+1) AND contcol = "1110") OR (controw = (controwp2+2) AND contcol = "1110"))THEN
+				nx_state <= dl;
+				
+				ELSIF(contcol = "1111")THEN
+				nx_state <= golp1;
+				
+				ELSIF(max_tick = '1' )THEN
+				nx_state <= playersur;
+				
+				ELSE 
+				nx_state <= ur;
+				END IF;
+			----------------------------------------------------------------	
+			WHEN ul	=>
+			
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				IF(controw = "000")THEN
+				nx_state <= dl;
+				
+				ELSIF(controw = (controwp1-1) AND contcol = "0001")THEN
+				nx_state <= ur;
+				
+				ELSIF(controw = (controwp1) AND contcol = "0001")THEN
+				nx_state <= r;
+				
+				ELSIF((controw = (controwp1+1) AND contcol = "0001") OR (controw = (controwp1+2) AND contcol = "0001"))THEN
+				nx_state <= dr;
+				
+				ELSIF(contcol = "0000")THEN
+				nx_state <= golp2;
+				
+				ELSIF(max_tick = '1' )THEN
+				nx_state <= playersul;
+				
+				ELSE 
+				nx_state <= ul;
+				END IF;
+			--------------------------------------------------------	
+			WHEN dl	=>
+				
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				IF(controw = "111")THEN
+				nx_state <= ul;
+				
+				ELSIF((controw = (controwp1-1) AND contcol = "0001") OR (controw = (controwp1-2) AND contcol = "0001"))THEN
+				nx_state <= ur;
+				
+				ELSIF(controw = (controwp1) AND contcol = "0001")THEN
+				nx_state <= r;
+				
+				ELSIF(controw = (controwp1+1) AND contcol = "0001")THEN
+				nx_state <= dr;
+				
+				ELSIF(contcol = "0000")THEN
+				nx_state <= golp2;
+				
+				ELSIF(max_tick = '1')THEN
+				nx_state <= playersdl;
+				ELSE 
+				nx_state <= dl;
+				END IF;
+			--------------------------------------------------------------
+			WHEN dr	=>
+				
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				IF(controw = "111")THEN
+				nx_state <= ur;
+				
+				ELSIF((controw = (controwp2-1) AND contcol = "1110") OR (controw = (controwp2-2) AND contcol = "1110"))THEN
+				nx_state <= ul;
+				
+				ELSIF(controw = (controwp2) AND contcol = "1110")THEN
+				nx_state <= l;
+				
+				ELSIF(controw = (controwp2+1) AND contcol = "1110")THEN
+				nx_state <= dl;
+				
+				ELSIF(contcol = "1111")THEN
+				nx_state <= golp1;
+				
+				ELSIF(max_tick = '1')THEN
+				nx_state <= playersdr;
+				ELSE 
+				nx_state <= dr;
+				END IF;
+			--------------------------------------------------------------------	
+			WHEN r	=>
+				
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				
+				IF(controw = (controwp2-1) AND contcol = "1110")THEN
+				nx_state <= ul;
+				
+				ELSIF(controw = (controwp2) AND contcol = "1110")THEN
+				nx_state <= l;
+				
+				ELSIF(controw = (controwp2+1) AND contcol = "1110")THEN
+				nx_state <= dl;
+				
+				ELSIF(contcol = "1111")THEN
+				nx_state <= golp1;
+				
+				ELSIF(max_tick = '1' )THEN
+				nx_state <= playersr;
+				
+				ELSE 
+				nx_state <= r;
+				END IF;
+			-----------------------------------------------------------------	
+			WHEN l	=>
+				
+				col <= (others => '0');
+				col(to_integer(contcol)) <= '1';
+				row <= (others => '1');
+				row(to_integer(controw)) <= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controw)) <= '0';
+				
+				
+				IF(controw = (controwp1-1) AND contcol = "0001")THEN
+				nx_state <= ur;
+				
+				ELSIF(controw = (controwp1) AND contcol = "0001")THEN
+				nx_state <= r;
+				
+				ELSIF(controw = (controwp1+1) AND contcol = "0001")THEN
+				nx_state <= dr;
+				
+				ELSIF(contcol = "0000")THEN
+				nx_state <= golp2;
+				
+				ELSIF(max_tick = '1')THEN
+				nx_state <= playersl;
+				
+				ELSE 
+				nx_state <= l;
+				END IF;
+--------------------------------------------------------------------------------------------------------------------------------		
+		WHEN playersur	=>
+				
+				col <= "1000000000000001";
+				row <= (others => '1');
+				
+				row(to_integer(controwp1 +1)) 	<= '0';
+				row(to_integer(controwp1)) 		<= '0';
+				row(to_integer(controwp1-1)) 	<= '0';
+				
+				row2 <= (others => '1');
+				row2(to_integer(controwp2+1))	<= '0';
+				row2(to_integer(controwp2)) 		<= '0';
+				row2(to_integer(controwp2-1)) 	<= '0';
+				
+				IF(max_tick = '1')THEN
+				nx_state <= ur;
+
+				
+				ELSE 
+				nx_state <= playersur;
+				END IF;
+		-------------------------------------------------------------		
+		WHEN playersul	=>
+				
+				col <= "1000000000000001";
+				row <= (others => '1');
+				row(to_integer(controwp1 +1)) 	<= '0';
+				row(to_integer(controwp1)) 		<= '0';
+				row(to_integer(controwp1-1)) 	<= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controwp2+1))	<= '0';
+				row2(to_integer(controwp2)) 		<= '0';
+				row2(to_integer(controwp2-1)) 	<= '0';
+				
+				IF(max_tick = '1')THEN
+				nx_state <= ul;
+
+				
+				ELSE 
+				nx_state <= playersul;
+				END IF;
+		---------------------------------------------------------------	
+		WHEN playersdr	=>
+				
+				col <= "1000000000000001";
+				row <= (others => '1');
+				row(to_integer(controwp1 +1)) 	<= '0';
+				row(to_integer(controwp1)) 		<= '0';
+				row(to_integer(controwp1-1)) 		<= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controwp2+1))		<= '0';
+				row2(to_integer(controwp2)) 		<= '0';
+				row2(to_integer(controwp2-1)) 	<= '0';
+				
+				IF(max_tick = '1')THEN
+				nx_state <= dr;
+
+				
+				ELSE 
+				nx_state <= playersdr;
+				END IF;			
+		-----------------------------------------------------------------------	
+		WHEN playersdl	=>
+				
+				col <= "1000000000000001";
+				row <= (others => '1');
+				row(to_integer(controwp1 +1)) 	<= '0';
+				row(to_integer(controwp1)) 		<= '0';
+				row(to_integer(controwp1-1)) 		<= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controwp2+1))		<= '0';
+				row2(to_integer(controwp2)) 		<= '0';
+				row2(to_integer(controwp2-1)) 	<= '0';
+				
+				IF(max_tick = '1')THEN
+				nx_state <= dl;
+
+				
+				ELSE 
+				nx_state <= playersdl;
+				END IF;	
+		---------------------------------------------------------------------------	
+		WHEN playersl	=>
+				
+				col <= "1000000000000001";
+				row <= (others => '1');
+				row(to_integer(controwp1 +1)) 	<= '0';
+				row(to_integer(controwp1)) 		<= '0';
+				row(to_integer(controwp1-1)) 		<= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controwp2+1))		<= '0';
+				row2(to_integer(controwp2)) 		<= '0';
+				row2(to_integer(controwp2-1)) 	<= '0';
+				
+				IF(max_tick = '1')THEN
+				nx_state <= l;
+
+				
+				ELSE 
+				nx_state <= playersl;
+				END IF;
+		---------------------------------------------------------------------	
+		WHEN playersr	=>
+				
+				col <= "1000000000000001";
+				row <= (others => '1');
+				row(to_integer(controwp1 +1)) 	<= '0';
+				row(to_integer(controwp1)) 		<= '0';
+				row(to_integer(controwp1-1)) 		<= '0';
+				row2 <= (others => '1');
+				row2(to_integer(controwp2+1))		<= '0';
+				row2(to_integer(controwp2)) 		<= '0';
+				row2(to_integer(controwp2-1)) 	<= '0';
+				
+				IF(max_tick = '1')THEN
+				nx_state <= r;
+
+				
+				ELSE 
+				nx_state <= playersr;
+				END IF;
+---------------------------------------------------------------------------------------------------------------------------------
+		
+		WHEN golp1	=>
+				
+				
+				IF(score1 = "0111")THEN
+				nx_state <= winner1;
+				
+				ELSIF(max_tick8 = '1' ) THEN
+				nx_state <= golp11;
+				
+				ELSE 
+				nx_state <= golp1;
+				END IF;
+				
+		WHEN golp11	=>
+				col <= (others => '0');
+				row <= (others => '1');
+				row2 <= (others => '1');
+				
+				IF(countergoal > "1111101000")THEN
+				nx_state <= startR;
+				ELSIF(max_tick = '1')THEN
+				nx_state <= rowg1;
+				ELSE 
+				nx_state <= golp11;
+				END IF;		
+				
+		WHEN rowg1	=>
+				row  <= "11111110";
+				row2 <= "11111110";
+				col  <= "0010111011101110";
+				
+				
+		
+				IF(max_tick = '1')THEN
+				nx_state <= rowg2;
+				ELSE 
+				nx_state <= rowg1;
+				END IF;
+				
+		WHEN rowg2	=>
+				row  <= "11111101";
+				row2 <= "11111101";
+				col  <= "0010101010100010";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg3;
+				
+				ELSE 
+				nx_state <= rowg2;
+				END IF;
+				
+		WHEN rowg3	=>
+				row  <= "11111011";
+				row2 <= "11111011";
+				col  <= "0010111010101010";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg4;
+				
+				ELSE 
+				nx_state <= rowg3;
+				END IF;
+			 
+		WHEN rowg4	=>
+				row  <= "11110111";
+				row2 <= "11110111";
+				col  <= "0110101011101110";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg5;
+				
+				ELSE 
+				nx_state <= rowg4;
+				END IF;
+				
+		WHEN rowg5	=>
+				row  <= "11101111";
+				row2 <= "11101111";
+				col  <= "0000000001011100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg6;
+				
+				ELSE 
+				nx_state <= rowg5;
+				END IF;
+				
+		WHEN rowg6	=>
+				row  <= "11011111";
+				row2 <= "11011111";
+				col  <= "0000000001010100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg7;
+				
+				ELSE 
+				nx_state <= rowg6;
+				END IF;
+			
+		WHEN rowg7	=>
+				row  <= "10111111";
+				row2 <= "10111111";
+				col  <= "0000000001011100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg8;
+				
+				ELSE 
+				nx_state <= rowg7;
+				END IF;
+				
+		WHEN rowg8	=>
+				row  <= "01111111";
+				row2 <= "01111111";
+				col  <= "0000000001000100";
+				 
+				
+				IF(max_tick = '1')THEN
+				nx_state <= golp11;
+				ELSE 
+				nx_state <= rowg8;
+				END IF;		
+				
+				
+				
+				
+				
+				
+				
+		---------------------------------------------------------------------	
+		WHEN golp2	=>
+				
+				IF(score2 = "0111")THEN
+				nx_state <= winner2;
+				
+				ELSIF(max_tick8 = '1' ) THEN
+				nx_state <= golp22;
+				
+				ELSE 
+				nx_state <= golp2;
+				END IF;
+				
+	   WHEN golp22	=>
+				col <= (others => '0');
+				row <= (others => '1');
+				row2 <= (others => '1');
+				
+				IF(countergoal > "1111101000")THEN
+				nx_state <= startR;
+				ELSIF(max_tick = '1')THEN
+				nx_state <= rowh1;
+				ELSE 
+				nx_state <= golp22;
+				END IF;		
+				
+		WHEN rowH1	=>
+				row  <= "11111110";
+				row2 <= "11111110";
+				col  <= "0010111011101110";
+				
+				
+		
+				IF(max_tick = '1')THEN
+				nx_state <= rowh2;
+				ELSE 
+				nx_state <= rowh1;
+				END IF;
+				
+		WHEN rowH2	=>
+				row  <= "11111101";
+				row2 <= "11111101";
+				col  <= "0010101010100010";
+				IF(max_tick = '1')THEN
+				nx_state <= rowh3;
+				
+				ELSE 
+				nx_state <= rowh2;
+				END IF;
+				
+		WHEN rowh3	=>
+				row  <= "11111011";
+				row2 <= "11111011";
+				col  <= "0010111010101010";
+				IF(max_tick = '1')THEN
+				nx_state <= rowh4;
+				
+				ELSE 
+				nx_state <= rowh3;
+				END IF;
+			 
+		WHEN rowh4	=>
+				row  <= "11110111";
+				row2 <= "11110111";
+				col  <= "0110101011101110";
+				IF(max_tick = '1')THEN
+				nx_state <= rowh5;
+				
+				ELSE 
+				nx_state <= rowh4;
+				END IF;
+				
+		WHEN rowh5	=>
+				row  <= "11101111";
+				row2 <= "11101111";
+				col  <= "0011011100000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowh6;
+				
+				ELSE 
+				nx_state <= rowh5;
+				END IF;
+				
+		WHEN rowh6	=>
+				row  <= "11011111";
+				row2 <= "11011111";
+				col  <= "0010010100000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowh7;
+				
+				ELSE 
+				nx_state <= rowh6;
+				END IF;
+			
+		WHEN rowh7	=>
+				row  <= "10111111";
+				row2 <= "10111111";
+				col  <= "0001011100000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowh8;
+				
+				ELSE 
+				nx_state <= rowh7;
+				END IF;
+				
+		WHEN rowh8	=>
+				row  <= "01111111";
+				row2 <= "01111111";
+				col  <= "0011000100000000";
+				 
+				
+				IF(max_tick = '1')THEN
+				nx_state <= golp22;
+				ELSE 
+				nx_state <= rowh8;
+				END IF;		
+-----------------------------------------------------------------------------------------------------------------------------	
+		WHEN winner1	=>
+				
+				IF(max_tick8 = '1' ) THEN
+				nx_state <= rowg11;
+				ELSE 
+				nx_state <= winner1;
+				END IF;
+		WHEN rowg11	=>
+				row  <= "11111110";
+				row2 <= "11111110";
+				col  <= "0000000000111100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg21;
+				ELSE 
+				nx_state <= rowg11;
+				END IF;
+				
+		WHEN rowg21	=>
+				row  <= "11111101";
+				row2 <= "11111101";
+				col  <= "0000000000111100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg31;
+				
+				ELSE 
+				nx_state <= rowg21;
+				END IF;
+				
+		WHEN rowg31	=>
+				row  <= "11111011";
+				row2 <= "11111011";
+				col  <= "0010010011111111";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg41;
+				
+				ELSE 
+				nx_state <= rowg31;
+				END IF;
+			 
+		WHEN rowg41	=>
+				row  <= "11110111";
+				row2 <= "11110111";
+				col  <= "0000000010111101";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg51;
+				
+				ELSE 
+				nx_state <= rowg41;
+				END IF;
+				
+		WHEN rowg51	=>
+				row  <= "11101111";
+				row2 <= "11101111";
+				col  <= "0011110001111110";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg61;
+				
+				ELSE 
+				nx_state <= rowg51;
+				END IF;
+				
+		WHEN rowg61	=>
+				row  <= "11011111";
+				row2 <= "11011111";
+				col  <= "0100001000111100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg71;
+				
+				ELSE 
+				nx_state <= rowg61;
+				END IF;
+			
+		WHEN rowg71	=>
+				row  <= "10111111";
+				row2 <= "10111111";
+				col  <= "0000000000011000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg81;
+				
+				ELSE 
+				nx_state <= rowg71;
+				END IF;
+				
+		WHEN rowg81	=>
+				row  <= "01111111";
+				row2 <= "01111111";
+				col  <= "0000000001111110";
+				 
+				
+				IF(max_tick = '1')THEN
+				nx_state <= rowg11;
+				ELSE 
+				nx_state <= rowg81;
+				END IF;	
+				
+		---------------------------------------------------------------------	
+		WHEN winner2	=>
+				IF(max_tick8 = '1' ) THEN
+				nx_state <= rowg12;
+				ELSE 
+				nx_state <= winner2;
+				END IF;
+				
+		WHEN rowg12	=>
+				row  <= "11111110";
+				row2 <= "11111110";
+				col  <= "0011110000000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg22;
+				ELSE 
+				nx_state <= rowg12;
+				END IF;
+				
+		WHEN rowg22	=>
+				row  <= "11111101";
+				row2 <= "11111101";
+				col  <= "0011110000000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg32;
+				
+				ELSE 
+				nx_state <= rowg22;
+				END IF;
+				
+		WHEN rowg32	=>
+				row  <= "11111011";
+				row2 <= "11111011";
+				col  <= "1111111100100100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg42;
+				
+				ELSE 
+				nx_state <= rowg32;
+				END IF;
+			 
+		WHEN rowg42	=>
+				row  <= "11110111";
+				row2 <= "11110111";
+				col  <= "1011110100000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg52;
+				
+				ELSE 
+				nx_state <= rowg42;
+				END IF;
+				
+		WHEN rowg52	=>
+				row  <= "11101111";
+				row2 <= "11101111";
+				col  <= "0111111000111100";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg62;
+				
+				ELSE 
+				nx_state <= rowg52;
+				END IF;
+				
+		WHEN rowg62	=>
+				row  <= "11011111";
+				row2 <= "11011111";
+				col  <= "0011110001000010";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg72;
+				
+				ELSE 
+				nx_state <= rowg62;
+				END IF;
+			
+		WHEN rowg72	=>
+				row  <= "10111111";
+				row2 <= "10111111";
+				col  <= "0001100000000000";
+				IF(max_tick = '1')THEN
+				nx_state <= rowg82;
+				
+				ELSE 
+				nx_state <= rowg72;
+				END IF;
+				
+		WHEN rowg82	=>
+				row  <= "01111111";
+				row2 <= "01111111";
+				col  <= "0111111000000000";
+				 
+				
+				IF(max_tick = '1')THEN
+				nx_state <= rowg12;
+				ELSE 
+				nx_state <= rowg82;
+				END IF;		
+		---------------------------------------------------------------------------		
+		END CASE;
+	END PROCESS;
+----------------------------------------------------------------------------------------------------------	
+	
+
+	TIMERmm: ENTITY WORK.univ_bin_counterpong
+		GENERIC MAP(N => 15)
+		PORT MAP(
+					clk 				=> clk,
+					rst				=> rst,
+					ena 				=> '1',
+					syn_clr			=> '0',
+					load 				=>	'0',
+					up 				=> '1',
+					d 					=> "0000",
+					max				=> "110000110101000",
+					max_tick5 		=> max_tick
+					); 	
+					
+	TIMERchasingled: ENTITY WORK.univ_bin_counterpong
+		GENERIC MAP(N => 24)
+		PORT MAP(
+					clk 				=> clk,
+					rst				=> rst,
+					ena 				=> '1',
+					syn_clr			=> '0',
+					load 				=>	'0',
+					up 				=> '1',
+					d 					=> "0000",
+					max				=> "101111101011110000100000",
+					max_tick5 		=> max_tick8
+					); 	
+	TIMERspeed: ENTITY WORK.univ_bin_counterpong
+		GENERIC MAP(N => 24)
+		PORT MAP(
+					clk 				=> clk,
+					rst				=> rst,
+					ena 				=> '1',
+					syn_clr			=> '0',
+					load 				=>	'0',
+					up 				=> '1',
+					d 					=> "0000",
+					max				=> max,
+					max_tick5 		=> max_ticks
+					); 		
+	TIMERrandomizer: ENTITY WORK.univ_bin_counterpong
+		GENERIC MAP(N => 3)
+		PORT MAP(
+					clk 				=> clk,
+					rst				=> rst,
+					ena 				=> '1',
+					syn_clr			=> '0',
+					load 				=>	'0',
+					up 				=> '1',
+					d 					=> "0000",
+					max				=> "101",
+					max_tick0 		=> max_tick0,
+					max_tick1 		=> max_tick1,
+					max_tick2 		=> max_tick2,
+					max_tick3 		=> max_tick3,
+					max_tick4 		=> max_tick4,
+					max_tick5 		=> max_tick5
+					); 
+							
+	TIMERgoal: ENTITY WORK.univ_bin_counterpong
+		GENERIC MAP(N => 28)
+		PORT MAP(
+					clk 				=> clk,
+					rst				=> rst,
+					ena 				=> '1',
+					syn_clr			=> '0',
+					load 				=>	'0',
+					up 				=> '1',
+					d 					=> "0000",
+					max				=> "1011111010111100001000000000",
+					max_tick5 		=> max_tickg
+					); 
+	TIMERmultiplex: ENTITY WORK.univ_bin_counterpong
+		GENERIC MAP(N => 14)
+		PORT MAP(
+					clk 				=> clk,
+					rst				=> rst,
+					ena 				=> '1',
+					syn_clr			=> '0',
+					load 				=>	'0',
+					up 				=> '1',
+					d 					=> "0000",
+					max				=> "11000011010100",
+					max_tick5 		=> max_tickm
+					);
+	bintosssegp1: ENTITY work.bin_to_ssegpong
+		PORT MAP		(	bin			=>	score1,
+							sseg			=>	score1d);
+							
+	bintosseg1p2: ENTITY work.bin_to_ssegpong
+		PORT MAP		(	bin			=>	score2,
+							sseg			=>	score2d);
+							
+							
+	edgedetector1u: ENTITY work.edge_detectpong
+		PORT MAP		(	clk			=>	clk,
+							async_sig	=>	not controwp1ju,
+							rise			=>	rise1u);
+							
+	edgedetector1d: ENTITY work.edge_detectpong
+		PORT MAP		(	clk			=>	clk,
+							async_sig	=>	not controwp1jd,
+							rise			=>	rise1d);	
+	edgedetector2u: ENTITY work.edge_detectpong
+		PORT MAP		(	clk			=>	clk,
+							async_sig	=>	not controwp2ju,
+							rise			=>	rise2u);
+							
+	edgedetector2d: ENTITY work.edge_detectpong
+		PORT MAP		(	clk			=>	clk,
+							async_sig	=>	not controwp2jd,
+							rise			=>	rise2d);						
+
+
+END ARCHITECTURE;
